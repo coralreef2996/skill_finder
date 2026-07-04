@@ -154,17 +154,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   onPressed: () {
                     // 各画面へ遷移
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => PlaceholderScreen(
-                              appName: widget.appName,
-                              isAdmin: isAdmin,
-                              originalHome: widget.originalHome,
-                            ),
-                      ),
-                    );
+                    if (isAdmin) {
+                      Navigator.pushReplacementNamed(context, '/admin');
+                    } else {
+                      Navigator.pushReplacementNamed(context, '/');
+                    }
                   },
                   child: const Text(
                     'ログイン',

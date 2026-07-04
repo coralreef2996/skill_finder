@@ -54,6 +54,7 @@ class MyApp extends StatelessWidget {
               originalHome: HomeScreen(),
             ),
         '/': (context) => const HomeScreen(),
+        '/admin': (context) => const AdminScreen(),
         '/question': (context) => const QuestionScreen(),
         '/result': (context) => const ResultScreen(),
         '/history': (context) => const HistoryScreen(),
@@ -179,18 +180,18 @@ class WeeklyRecord {
 class DummyData {
   // 基本のカテゴリーリスト
   static final List<String> categories = [
-    '技術力',
-    '集中力',
-    '協調性',
-    '正確性',
+    '画力',
     '創造性',
-    '論理性',
+    '構成力',
+    '表現力',
+    '集中力',
+    '効率性',
   ];
 
   // 質問セットのダミーデータを生成
   static List<QuestionSet> getQuestionSets() {
     return [
-      _createQuestionSet('QS000', 'イラスト', 'イラスト制作', [
+      _createQuestionSet('QS000', 'イラスト制作', 'イラスト制作', [
         '画力',
         '創造性',
         '構成力',
@@ -198,45 +199,37 @@ class DummyData {
         '集中力',
         '効率性',
       ]),
-      _createQuestionSet('QS001', '動画編集', '動画編集作業', [
-        '技術力',
+      _createQuestionSet('QS001', '3Dモデリング', '3Dモデリング', [
+        '造形力',
+        '質感表現',
+        '空間認識',
+        '骨組設計',
         '集中力',
-        '協調性',
-        '正確性',
-        '創造性',
-        '論理性',
+        '作業効率',
       ]),
-      _createQuestionSet('QS002', '事務作業', 'データ入力・書類作成', [
-        '正確性',
+      _createQuestionSet('QS002', 'DTM', 'DTM', [
+        'メロディ感覚',
+        '音響デザイン',
+        'リズム感',
+        '音響調整',
         '集中力',
-        '効率性',
-        '理解力',
-        '整理力',
-        '丁寧さ',
+        '作業効率',
       ]),
-      _createQuestionSet('QS003', '清掃作業', '施設内清掃', [
-        '丁寧さ',
-        '体力',
-        '協調性',
-        '正確性',
-        '効率性',
-        '気配り',
-      ]),
-      _createQuestionSet('QS004', '接客業務', 'カフェ・店舗接客', [
-        'コミュニケーション力',
-        '笑顔',
-        '丁寧さ',
-        '正確性',
-        '臨機応変',
-        '気配り',
-      ]),
-      _createQuestionSet('QS005', '軽作業', 'ピッキング・梱包', [
-        '正確性',
+      _createQuestionSet('QS003', '動画編集', '動画編集', [
+        'カット技術',
+        'テロップデザイン',
+        '演出力',
+        '音量バランス',
         '集中力',
-        '体力',
-        '効率性',
-        '丁寧さ',
-        '持久力',
+        '納品効率',
+      ]),
+      _createQuestionSet('QS004', 'データ入力', 'データ入力', [
+        '入力速度',
+        '正確性',
+        'データ整理',
+        'ツール活用',
+        '集中力',
+        '情報セキュリティ',
       ]),
     ];
   }
@@ -271,382 +264,12 @@ class DummyData {
 
   // ヘルパーメソッド: 質問文を生成
   static String _getQuestionText(String category, int day, String context) {
-    if (context == '動画編集' || context == '動画編集作業') {
-      return _getVideoEditingQuestion(category, day);
-    } else if (context == 'イラスト' || context == 'イラスト制作') {
-      return _getIllustrationQuestion(category, day);
-    } else if (context == '事務作業' || context == 'データ入力・書類作成') {
-      return _getOfficeWorkQuestion(category, day);
-    } else if (context == '清掃作業' || context == '施設内清掃') {
-      return _getCleaningWorkQuestion(category, day);
-    } else if (context == '接客業務' || context == 'カフェ・店舗接客') {
-      return _getCustomerServiceQuestion(category, day);
-    } else if (context == '軽作業' || context == 'ピッキング・梱包') {
-      return _getLightWorkQuestion(category, day);
-    }
-
-    // その他のコンテキスト用のデフォルト質問
-    switch (category) {
-      case '技術力':
-        return '$contextにおいて、ツールの操作や手順はスムーズに行えましたか？ (Day ${day + 1})';
-      case '集中力':
-        return '作業中、他のことに気を取られずに集中を持続できましたか？ (Day ${day + 1})';
-      case '協調性':
-        return '周囲のメンバーやスタッフと適切なコミュニケーションが取れましたか？ (Day ${day + 1})';
-      case '正確性':
-        return 'ミスなく、指示通りの手順で作業を完了できましたか？ (Day ${day + 1})';
-      case '創造性':
-        return 'より良い方法を工夫したり、新しいアイデアを試したりしましたか？ (Day ${day + 1})';
-      case '論理性':
-        return '作業の優先順位を考え、効率的に進めることができましたか？ (Day ${day + 1})';
-      default:
-        return '今日の作業は順調でしたか？';
-    }
-  }
-
-  // イラスト制作専用の質問
-  static String _getIllustrationQuestion(String category, int day) {
-    final questions = {
-      '画力': [
-        'デッサンや下書きの線は、思い描いた通りに引けましたか？',
-        'キャラクターや物体のバランス（人体構造やパース）は正しく描けましたか？',
-        '線画のクリンナップは、抑揚をつけて丁寧に仕上げられましたか？',
-        '質感（服のシワ、金属、肌など）を描き分けることができましたか？',
-        '細部の書き込み（髪の毛、アクセサリーなど）まで妥協せずに描けましたか？',
-      ],
-      '創造性': [
-        '既存の模倣ではなく、オリジナリティのあるポーズやデザインを考案できましたか？',
-        'キャラクターの性格やストーリーが伝わるような工夫を盛り込めましたか？',
-        '新しい塗り方や技法、ブラシ設定などを積極的に試してみましたか？',
-        'マンネリ化を防ぐため、普段とは違う画風やテイストに挑戦しましたか？',
-        '魅力的な世界観を作り出すための背景や小物のアイデアを出せましたか？',
-      ],
-      '構成力': [
-        '画面全体を見たとき、視線誘導を意識したレイアウトが組めましたか？',
-        '余白のバランスや断ち切りの位置は適切に設定できましたか？',
-        'メインの被写体が最も目立つような構図を選べましたか？',
-        'ラフ段階で複数の構図案を出し、最良のものを選択できましたか？',
-        '背景とキャラクターの奥行き関係（遠近感）を正しく表現できましたか？',
-      ],
-      '表現力': [
-        '色彩設計（カラー配分）は、テーマやムードに合っていましたか？',
-        '光と影（ライティング）を意識し、ドラマチックな演出ができましたか？',
-        'キャラクターの表情や仕草から、感情を豊かに表現できましたか？',
-        '空気感や温度感が伝わるような塗りやエフェクトを使えましたか？',
-        '仕上げの加工（オーバーレイ、ぼかし等）で、絵の魅力を最大限に引き出せましたか？',
-      ],
-      '集中力': [
-        '長時間キャンバスに向かう中で、集中を切らさずに描き続けられましたか？',
-        '苦手なパーツや修正作業から逃げずに、粘り強く取り組めましたか？',
-        '資料探しの時間に没頭しすぎず、描くこと自体に集中できましたか？',
-        'SNSや他の作業に気を取られず、没入状態（ゾーン）に入れましたか？',
-        '疲労が溜まってきても、線の勢いや塗りの丁寧さを維持できましたか？',
-      ],
-      '効率性': [
-        'ショートカットキーや左手デバイスを活用して、作画スピードを上げられましたか？',
-        'レイヤー構成を整理し、後からの修正がしやすいように管理できましたか？',
-        'ラフ、線画、着彩の時間配分を計画通りに進められましたか？',
-        '素材やブラシプリセットを活用して、無駄な作業時間を短縮できましたか？',
-        '完成のイメージを明確にしてから描き始め、迷走する時間を減らせましたか？',
-      ],
-    };
-    return _getQuestionFromMap(questions, category, day, 'イラスト制作');
-  }
-
-  // 動画編集専用の質問（6カテゴリー × 5日間 = 30問）
-  static String _getVideoEditingQuestion(String category, int day) {
-    final questions = {
-      '技術力': [
-        'カット編集やトリミングの操作はスムーズに行えましたか？',
-        'トランジション（場面転換効果）を適切に挿入できましたか？',
-        'テロップや字幕の挿入・編集は問題なくできましたか？',
-        '音声の調整（音量・フェードイン/アウト）は適切にできましたか？',
-        'エフェクトやカラー補正を使いこなせましたか？',
-      ],
-      '集中力': [
-        'タイムラインを見ながら長時間作業に集中できましたか？',
-        '細かいフレーム単位の編集作業に集中を維持できましたか？',
-        '複数の素材を扱いながら、注意力を保てましたか？',
-        '音声同期やリップシンクの確認作業に集中できましたか？',
-        'プレビュー確認と修正を繰り返す作業に粘り強く取り組めましたか？',
-      ],
-      '協調性': [
-        'ディレクターや担当者からの指示を正しく理解できましたか？',
-        '修正依頼があった際、柔軟に対応できましたか？',
-        '作業の進捗や問題点を適切に報告・共有できましたか？',
-        'チームメンバーとファイルや素材の受け渡しがスムーズでしたか？',
-        'フィードバックを前向きに受け止め、改善に活かせましたか？',
-      ],
-      '正確性': [
-        '指定されたカット位置や尺（秒数）を正確に守れましたか？',
-        'テロップの誤字脱字なく入力できましたか？',
-        '書き出し設定（解像度・フォーマット）を正しく設定できましたか？',
-        'ファイル名やフォルダの整理を規則通りに行えましたか？',
-        '納品前のチェックリストを漏れなく確認できましたか？',
-      ],
-      '創造性': [
-        '映像のリズムやテンポを意識した編集ができましたか？',
-        '効果的なBGMや効果音の選択・配置ができましたか？',
-        '視聴者の興味を引く演出やアイデアを試せましたか？',
-        'オープニングやエンディングに工夫を加えられましたか？',
-        '全体の構成やストーリー性を意識した編集ができましたか？',
-      ],
-      '論理性': [
-        '作業の優先順位を考えて効率的に進められましたか？',
-        '素材の整理やプロジェクト管理が論理的にできましたか？',
-        '編集の手順を計画し、無駄のない作業ができましたか？',
-        '問題が発生した際、原因を論理的に特定できましたか？',
-        '締め切りから逆算して、時間配分を適切に行えましたか？',
-      ],
-    };
-
-    return _getQuestionFromMap(questions, category, day, '動画編集');
-  }
-
-  // 事務作業専用の質問
-  static String _getOfficeWorkQuestion(String category, int day) {
-    final questions = {
-      '正確性': [
-        'データ入力時に数値や文字の入力ミスはありませんでしたか？',
-        '書類の誤字脱字やレイアウト崩れを入念にチェックしましたか？',
-        'ファイル名や保存場所のルールを正確に守れましたか？',
-        '計算式や関数の使用に誤りはありませんでしたか？',
-        '最終確認（ダブルチェック）を怠らずに行えましたか？',
-      ],
-      '集中力': [
-        '単調な入力作業でも集中力を切らさずに続けられましたか？',
-        '周囲の音や話し声に気を取られず、目の前の作業に没頭できましたか？',
-        '長時間デスクワークをする中で、適度な休憩を挟みつつ集中を維持しましたか？',
-        '複数のタスクを切り替える際、速やかに意識を集中できましたか？',
-        '午後の眠くなりやすい時間帯でも集中してミスを防げましたか？',
-      ],
-      '効率性': [
-        'ショートカットキーを活用して入力速度を上げられましたか？',
-        '優先順位の高いタスクから順序よく処理できましたか？',
-        'テンプレートや既存フォーマットを活用して時間を短縮しましたか？',
-        '不明点を早めに解消し、作業の手戻りを防げましたか？',
-        '予定していた時間内に目標の作業量を完了できましたか？',
-      ],
-      '理解力': [
-        '作業マニュアルや指示書の内容を正しく理解できましたか？',
-        '専門用語や社内ルールについて、不明なままにせず確認しましたか？',
-        '依頼者の意図を汲み取り、求められている成果物を作成できましたか？',
-        '業務フロー全体の流れを把握して作業に取り組めましたか？',
-        'フィードバックされた内容の理由を正しく理解し、次に活かせそうですか？',
-      ],
-      '整理力': [
-        'デスク周りやPCのデスクトップは整理整頓されていましたか？',
-        '必要な書類やデータをすぐに取り出せる状態に保てましたか？',
-        '不要なファイルやメールの削除・整理を行いましたか？',
-        'タスクの進捗状況をメモやツールで整理して管理しましたか？',
-        '共有フォルダ内のファイル構成を分かりやすく維持できましたか？',
-      ],
-      '丁寧さ': [
-        '電話対応やメールの文面で、丁寧な言葉遣いを心がけましたか？',
-        '書類のホチキス止めやファイリングを綺麗に行いましたか？',
-        '備品や共有機材を丁寧に扱いましたか？',
-        '字を書く際、誰が見ても読みやすい文字を心がけましたか？',
-        '挨拶や身だしなみなど、基本的なマナーを大切にしましたか？',
-      ],
-    };
-    return _getQuestionFromMap(questions, category, day, '事務作業');
-  }
-
-  // 清掃作業専用の質問
-  static String _getCleaningWorkQuestion(String category, int day) {
-    final questions = {
-      '丁寧さ': [
-        '四隅や物陰など、見えにくい場所の汚れも丁寧に落とせましたか？',
-        '拭き残しや水滴の跡が残らないよう、綺麗に仕上げられましたか？',
-        '備品を動かした際、元の位置に丁寧に戻しましたか？',
-        'ガラスや鏡など、指紋を残さずにピカピカに磨けましたか？',
-        'お客様や利用者が通る際、丁寧な挨拶や配慮ができましたか？',
-      ],
-      '体力': [
-        '長時間の立ち作業や移動でも、バテずに作業を継続できましたか？',
-        '重い機材やゴミの運搬を、安全かつスムーズに行えましたか？',
-        '階段の昇り降りや屈伸運動など、身体への負担をコントロールできましたか？',
-        '暑さや寒さの中でも、体調管理をしながら作業できましたか？',
-        '作業終了まで一定のペースを保って動き続けられましたか？',
-      ],
-      '協調性': [
-        '広いエリアを分担する際、チームと連携して効率よく動けましたか？',
-        '作業の遅れている箇所の手伝いやフォローができましたか？',
-        '通路を塞がないよう、周囲の状況を見て作業できましたか？',
-        '備品の補充や交換の情報をスタッフ間で共有できましたか？',
-        'シフト交代時の引き継ぎ事項を漏れなく伝えられましたか？',
-      ],
-      '正確性': [
-        '洗剤の希釈倍率や使用箇所を間違いなく守れましたか？',
-        '清掃手順（上から下へ、奥から手前へなど）を正確に守れましたか？',
-        '点検表やチェックリストの項目を正確に記入できましたか？',
-        'ゴミの分別ルールを厳守して処理できましたか？',
-        '危険箇所や破損箇所を見つけた際、規定通りに報告できましたか？',
-      ],
-      '効率性': [
-        '無駄な動きを減らし、最短ルートで移動・作業ができましたか？',
-        '汚れの度合いに応じて、適切な道具を素早く選択できましたか？',
-        '準備や後片付けの時間を短縮する工夫ができましたか？',
-        '二度手間にならないよう、一度で確実に汚れを落とせましたか？',
-        '制限時間内に担当エリアを全て完了させられましたか？',
-      ],
-      '気配り': [
-        '利用者が近くにいる時、作業音や埃に配慮しましたか？',
-        '滑りやすい床への注意喚起など、安全への配慮ができましたか？',
-        'トイレットペーパーや石鹸の補充状況に気を配れましたか？',
-        '清潔感のある身だしなみで、利用者に不快感を与えないよう注意しましたか？',
-        '「清掃中」の看板を適切な位置に見やすく設置できましたか？',
-      ],
-    };
-    return _getQuestionFromMap(questions, category, day, '清掃作業');
-  }
-
-  // 接客業務専用の質問
-  static String _getCustomerServiceQuestion(String category, int day) {
-    final questions = {
-      'コミュニケーション力': [
-        'お客様の要望を正確に聞き取り、適切な提案ができましたか？',
-        'はっきりとした声で、聞き取りやすいトーンで話せましたか？',
-        'お客様の質問に対して、分かりやすく説明できましたか？',
-        '困っているお客様に、自ら進んで声をかけられましたか？',
-        '感謝や謝罪の言葉を、心を込めて伝えられましたか？',
-      ],
-      '笑顔': [
-        '入店時や退店時、自然で明るい笑顔で挨拶できましたか？',
-        'マスク越しでも伝わるような、目元の笑顔を意識しましたか？',
-        '忙しい時でも、不機嫌な顔を見せずに笑顔を保てましたか？',
-        'お客様と目が合った際、柔和な表情で会釈できましたか？',
-        'スタッフ同士の会話でも、明るい表情を心がけましたか？',
-      ],
-      '丁寧さ': [
-        '商品の受け渡し時、両手を添えて丁寧に行えましたか？',
-        '言葉遣い（敬語、クッション言葉）を正しく使えましたか？',
-        'お釣りを渡す際、お客様が確認しやすいよう丁寧に扱いましたか？',
-        '案内をする際、指差しではなく手のひらで方向を示せましたか？',
-        'お辞儀の角度や姿勢を意識し、丁寧な振る舞いができましたか？',
-      ],
-      '正確性': [
-        'オーダーの聞き間違いや入力ミスはありませんでしたか？',
-        'レジ操作やお会計の計算を正確に行えましたか？',
-        '商品の在庫確認や説明内容に誤りはありませんでしたか？',
-        '予約の受付日時や人数を正確に記録・管理できましたか？',
-        '提供する商品やサービスの順序・セット内容に間違いはありませんでしたか？',
-      ],
-      '臨機応変': [
-        '混雑時、状況を見て優先順位を判断し行動できましたか？',
-        'イレギュラーな要望やクレームに対し、落ち着いて対応できましたか？',
-        'お子様連れや高齢者など、相手に合わせた配慮ある対応ができましたか？',
-        'マニュアルにない事態でも、上司に相談するなど適切に動けましたか？',
-        '急な欠品やトラブルの際、代替案をスムーズに提案できましたか？',
-      ],
-      '気配り': [
-        'お客様の水のおかわりや空いたお皿にすぐに気づけましたか？',
-        '店内の温度やBGMの音量など、快適な環境作りに気を配れましたか？',
-        'お客様が何かを探している様子に、いち早く気づけましたか？',
-        '雨天時の傘袋の準備など、状況に合わせた心遣いができましたか？',
-        '退店されるお客様を、感謝の気持ちを込めてお見送りできましたか？',
-      ],
-    };
-    return _getQuestionFromMap(questions, category, day, '接客業務');
-  }
-
-  // 軽作業専用の質問
-  static String _getLightWorkQuestion(String category, int day) {
-    final questions = {
-      '正確性': [
-        'ピッキングリストの品番や数量を指差し確認しましたか？',
-        '梱包時、宛先ラベルの貼り間違いがないか確認しましたか？',
-        '商品の向きや並べ方を、指定通り正確に行えましたか？',
-        '検品作業で、不良品の見落としはありませんでしたか？',
-        '在庫数のカウントや記録を、誤差なく行えましたか？',
-      ],
-      '集中力': [
-        '繰り返しの作業でも、漫然とせずに集中して行えましたか？',
-        '手元の細かい作業に、視線を外さず没頭できましたか？',
-        '作業中の私語を慎み、手元に意識を集中させられましたか？',
-        '疲れが出る時間帯でも、ミスが出ないよう集中力を維持しましたか？',
-        '急ぎの作業でも、焦らず一つ一つの動作に集中できましたか？',
-      ],
-      '体力': [
-        '重い荷物を持つ際、腰を痛めない正しい姿勢で行えましたか？',
-        '立ちっぱなしの作業でも、足腰の負担を軽減する工夫ができましたか？',
-        '広い倉庫内の移動でも、疲れを見せずに歩き回れましたか？',
-        '作業スピードを落とさず、最後まで体力を維持できましたか？',
-        '翌日に疲れを残さないよう、作業後のストレッチなどケアを行いましたか？',
-      ],
-      '効率性': [
-        '動線を意識して、移動距離の少ない順路で作業できましたか？',
-        '両手を使って作業するなど、スピードアップの工夫をしましたか？',
-        '梱包資材の準備を事前に行い、スムーズに梱包作業に入れましたか？',
-        '次に使う道具を取りやすい位置に配置していましたか？',
-        '目標個数（ノルマ）を達成するためのペース配分ができましたか？',
-      ],
-      '丁寧さ': [
-        '商品を傷つけないよう、優しく慎重に扱いましたか？',
-        '梱包テープをヨレずに真っ直ぐ綺麗に貼れましたか？',
-        '緩衝材を適切に入れ、配送中の破損を防ぐ梱包ができましたか？',
-        '商品を棚に戻す際、乱雑にならず綺麗に整頓しましたか？',
-        '作業台の周りを常に整理整頓し、次に使う人が気持ちよく使えるようにしましたか？',
-      ],
-      '持久力': [
-        '単調な作業の繰り返しでも、モチベーションを維持して続けられましたか？',
-        '残業や繁忙期の長時間作業でも、根気強く取り組めましたか？',
-        '一定のリズムを保って、ムラのない作業ペースを持続できましたか？',
-        '精神的なストレスや飽きを感じても、最後までやり遂げる力がありましたか？',
-        '週の後半で疲労が溜まってきても、品質を落とさず作業できましたか？',
-      ],
-    };
-    return _getQuestionFromMap(questions, category, day, '軽作業');
-  }
-
-  static String _getQuestionFromMap(
-    Map<String, List<String>> questions,
-    String category,
-    int day,
-    String context,
-  ) {
-    final categoryQuestions = questions[category];
-    if (categoryQuestions != null && day < categoryQuestions.length) {
-      return categoryQuestions[day];
-    }
-    return '今日の$context作業は順調でしたか？';
+    return '$contextにおける「$category」に関する質問 (Day ${day + 1})';
   }
 
   // 履歴のダミーデータを生成
   static List<WeeklyRecord> getHistory() {
-    return [
-      WeeklyRecord(
-        id: 'WR001',
-        title: '動画編集',
-        startDate: DateTime.now().subtract(const Duration(days: 14)),
-        dailyRecords: _generateDailyRecords(
-          DateTime.now().subtract(const Duration(days: 14)),
-        ),
-      ),
-      WeeklyRecord(
-        id: 'WR002',
-        title: '事務作業',
-        startDate: DateTime.now().subtract(const Duration(days: 7)),
-        dailyRecords: _generateDailyRecords(
-          DateTime.now().subtract(const Duration(days: 7)),
-        ),
-      ),
-    ];
-  }
-
-  static List<DailyRecord> _generateDailyRecords(DateTime startOfWeek) {
-    List<DailyRecord> records = [];
-    for (int i = 0; i < 5; i++) {
-      records.add(
-        DailyRecord(
-          dayIndex: i,
-          date: startOfWeek.add(Duration(days: i)),
-          answers: {},
-          memo: 'Day ${i + 1} memo',
-        ),
-      );
-    }
-    return records;
+    return [];
   }
 }
 
@@ -837,9 +460,27 @@ class AppState extends ChangeNotifier {
 
   // 履歴レコードを削除する
   void deleteHistoryRecord(String id) {
-    _history.removeWhere((record) => record.id == id);
-    _saveData(); // 保存
-    notifyListeners();
+    // 削除対象のレコードを検索
+    final recordIndex = _history.indexWhere((r) => r.id == id);
+    if (recordIndex != -1) {
+      final record = _history[recordIndex];
+      
+      // 削除対象の履歴と同じ職種（タイトル）を持つ QuestionSet のIDを探す
+      final matchedSet = _questionSets.firstWhere(
+        (qs) => qs.title == record.title,
+        orElse: () => QuestionSet(id: '', title: '', questions: [], categories: []),
+      );
+
+      if (matchedSet.id.isNotEmpty) {
+        // マッチした職種の進行中データをクリア
+        _activeRecordsPerGenre[matchedSet.id]?.clear();
+        _activeStartDatesPerGenre.remove(matchedSet.id);
+      }
+      
+      _history.removeAt(recordIndex);
+      _saveData(); // 保存
+      notifyListeners();
+    }
   }
 
   // 新しい週を開始する
@@ -1038,13 +679,7 @@ class AppState extends ChangeNotifier {
       return _calculateCumulativeScoresUpTo(lastCompleted);
     }
 
-    // 2. 履歴がある場合
-    if (_history.isNotEmpty) {
-      final latestWeeklyRecord = _history.first;
-      return _calculateCumulativeScoresFromHistory(latestWeeklyRecord);
-    }
-
-    // 3. データがない場合は現在のカテゴリーで全て-1を返す（中心点に表示）
+    // 回答がない場合は現在のカテゴリーで全て-1.0を返す（中心点に表示）
     if (_currentQuestionSet != null) {
       return {for (var cat in _currentQuestionSet!.categories) cat: -1.0};
     }
@@ -1055,12 +690,11 @@ class AppState extends ChangeNotifier {
   Map<String, double> _calculateCumulativeScoresUpTo(int targetDayIndex) {
     if (_currentQuestionSet == null) return {};
 
-    Map<String, int> categoryScores = {};
-    // 現在のQuestionSetのカテゴリーを使用
-    for (var cat in _currentQuestionSet!.categories) {
-      categoryScores[cat] = 0;
-    }
+    Map<String, double> categoryScores = {
+      for (var cat in _currentQuestionSet!.categories) cat: -1.0
+    };
 
+    bool hasAnyAnswer = false;
     for (var entry in _currentWeekRecords.entries) {
       if (entry.key <= targetDayIndex) {
         final record = entry.value;
@@ -1073,51 +707,22 @@ class AppState extends ChangeNotifier {
           );
           if (question.category.isNotEmpty &&
               categoryScores.containsKey(question.category)) {
-            categoryScores[question.category] =
-                (categoryScores[question.category] ?? 0) + score;
+            hasAnyAnswer = true;
+            double currentScore = categoryScores[question.category]!;
+            if (currentScore < 0) currentScore = 0.0;
+            categoryScores[question.category] = currentScore + score;
           }
         }
       }
     }
-    return categoryScores.map((key, value) => MapEntry(key, value.toDouble()));
-  }
 
-  // 履歴レコードから累計スコアを計算
-  Map<String, double> _calculateCumulativeScoresFromHistory(
-    WeeklyRecord record,
-  ) {
-    if (_currentQuestionSet == null) return {};
-
-    Map<String, int> categoryScores = {};
-    // 現在のQuestionSetのカテゴリーを使用
-    for (var cat in _currentQuestionSet!.categories) {
-      categoryScores[cat] = 0;
+    if (!hasAnyAnswer) {
+      return {for (var cat in _currentQuestionSet!.categories) cat: -1.0};
     }
 
-    // 履歴の全てのDailyRecordを集計（週の終わり時点の状態）
-    for (var dailyRecord in record.dailyRecords) {
-      for (var answerEntry in dailyRecord.answers.entries) {
-        final qId = answerEntry.key;
-        final score = answerEntry.value;
-        // 履歴の場合、QuestionSetが切り替わっている可能性があるため、
-        // 本当はQuestionSetの情報も履歴に持たせるべきだが、
-        // ここでは現在のセットまたはダミーデータから推測する簡易実装とする。
-        // ※厳密には履歴保存時にカテゴリーごとのスコアを保存すべき。
-
-        // 暫定対応: 現在のセットから探す。なければ無視。
-        final question = _currentQuestionSet!.questions.firstWhere(
-          (q) => q.id == qId,
-          orElse: () => Question(id: '', text: '', category: '', dayIndex: 0),
-        );
-        if (question.category.isNotEmpty &&
-            categoryScores.containsKey(question.category)) {
-          categoryScores[question.category] =
-              (categoryScores[question.category] ?? 0) + score;
-        }
-      }
-    }
-    return categoryScores.map((key, value) => MapEntry(key, value.toDouble()));
+    return categoryScores;
   }
+
 
   // 先週の記録から指定した日までの累計スコアを取得
   Map<String, double> getPreviousWeekScoresUpToDay(int targetDayIndex) {
@@ -1270,8 +875,15 @@ class AppState extends ChangeNotifier {
 
 // 1. ホーム画面
 // アプリを立ち上げて最初に表示される、メインの画面です。
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _showCapabilityParameters = false;
 
   @override
   Widget build(BuildContext context) {
@@ -1308,17 +920,20 @@ class HomeScreen extends StatelessWidget {
                       tooltip: '過去の記録',
                     ),
                     IconButton(
-                      icon: const Icon(Icons.edit),
+                      icon: const Icon(Icons.logout),
                       onPressed:
-                          () => Navigator.pushNamed(context, '/question_edit'),
-                      tooltip: '質問編集',
+                          () => Navigator.pushReplacementNamed(
+                            context,
+                            '/login',
+                          ),
+                      tooltip: 'ログアウト',
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 // 見出しを表示します。
                 Text(
-                  '今週の成長記録',
+                  '成長記録',
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 16),
@@ -1412,7 +1027,41 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 30),
+                // 凡例（積層表現の説明）
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: const BoxDecoration(
+                        color: Colors.blue,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Text(
+                      '自己評価（診断）',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(width: 20),
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: const BoxDecoration(
+                        color: Colors.orangeAccent,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Text(
+                      'SP上乗せブースト',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
                 // レーダーチャート表示エリア
                 Container(
                   height: 400, // 高さを固定
@@ -1429,24 +1078,53 @@ class HomeScreen extends StatelessWidget {
                       if (lastCompleted < 0) lastCompleted = 0;
                       if (lastCompleted > 4) lastCompleted = 4;
 
-                      final double maxScore = (lastCompleted + 1) * 4.0;
+                      final double baseMaxScore = (lastCompleted + 1) * 4.0;
+                      final double maxScore = baseMaxScore + 3.5; // SPブースト分の余白
+
+                      final categories =
+                          appState.currentQuestionSet?.categories ?? [];
 
                       return RadarChart(
                         RadarChartData(
                           dataSets: [
+                            // 1. SP上乗せブースト（ベース＋SP獲得分の積層エリア）
                             RadarDataSet(
-                              fillColor: Colors.blue.withValues(alpha: 0.2),
-                              borderColor: Colors.blue,
+                              fillColor: Colors.orangeAccent.withValues(
+                                alpha: 0.35,
+                              ),
+                              borderColor: Colors.orange,
+                              borderWidth: 2.0,
                               entryRadius: 3,
                               dataEntries:
-                                  (appState.currentQuestionSet?.categories ??
-                                          [])
-                                      .map((cat) {
-                                        // データがなければ-1（中心点）を表示
-                                        final value = radarData[cat];
-                                        return RadarEntry(value: value ?? -1.0);
-                                      })
-                                      .toList(),
+                                  categories.asMap().entries.map((entry) {
+                                    int index = entry.key;
+                                    String cat = entry.value;
+                                    final val = radarData[cat] ?? -1.0;
+
+                                    if (val < 0) {
+                                      return const RadarEntry(value: -1.0);
+                                    }
+
+                                    // SP計算
+                                    int sp = ((val / 20.0) * 500).toInt();
+                                    if (sp < 50) sp = (index + 1) * 60;
+                                    if (sp > 500) sp = 500;
+
+                                    double spBoost = (sp / 500.0) * 3.5;
+                                    return RadarEntry(value: val + spBoost);
+                                  }).toList(),
+                            ),
+                            // 2. 自己評価診断スコア（ベースエリア）
+                            RadarDataSet(
+                              fillColor: Colors.blue.withValues(alpha: 0.5),
+                              borderColor: Colors.blue.shade700,
+                              borderWidth: 2.0,
+                              entryRadius: 3,
+                              dataEntries:
+                                  categories.map((cat) {
+                                    final value = radarData[cat];
+                                    return RadarEntry(value: value ?? -1.0);
+                                  }).toList(),
                             ),
                             // 透明なデータセットを追加してスケールを固定 (Max)
                             RadarDataSet(
@@ -1454,12 +1132,9 @@ class HomeScreen extends StatelessWidget {
                               borderColor: Colors.transparent,
                               entryRadius: 0,
                               dataEntries:
-                                  (appState.currentQuestionSet?.categories ??
-                                          [])
-                                      .map((cat) {
-                                        return RadarEntry(value: maxScore);
-                                      })
-                                      .toList(),
+                                  categories.map((cat) {
+                                    return RadarEntry(value: maxScore);
+                                  }).toList(),
                             ),
                             // 最小値を-1に固定するための透明なデータセット
                             RadarDataSet(
@@ -1467,12 +1142,9 @@ class HomeScreen extends StatelessWidget {
                               borderColor: Colors.transparent,
                               entryRadius: 0,
                               dataEntries:
-                                  (appState.currentQuestionSet?.categories ??
-                                          [])
-                                      .map((cat) {
-                                        return const RadarEntry(value: -1.0);
-                                      })
-                                      .toList(),
+                                  categories.map((cat) {
+                                    return const RadarEntry(value: -1.0);
+                                  }).toList(),
                             ),
                           ],
                           isMinValueAtCenter: true,
@@ -1506,6 +1178,192 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
                 ),
+                const SizedBox(height: 24),
+                // 「作業説明アプリからデータを受け取る」ボタン
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _showCapabilityParameters = !_showCapabilityParameters;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6750A4),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 2,
+                  ),
+                  icon: const Icon(Icons.download, size: 22),
+                  label: const Text(
+                    '作業説明アプリから\nデータを受け取る',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+                if (_showCapabilityParameters) ...[
+                  const SizedBox(height: 24),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.purple.shade100,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.auto_awesome,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '能力パラメーター',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const Divider(height: 24, thickness: 1),
+                        ...List.generate(
+                          (appState.currentQuestionSet?.categories ?? []).length,
+                          (index) {
+                            final categories =
+                                appState.currentQuestionSet?.categories ?? [];
+                            final cat = categories[index];
+
+                            // 6つの要素に対応した色違いのカラー
+                            final colors = [
+                              Colors.redAccent,
+                              Colors.orangeAccent,
+                              Colors.amber.shade700,
+                              Colors.green.shade600,
+                              Colors.blueAccent,
+                              Colors.purpleAccent,
+                            ];
+                            final color = colors[index % colors.length];
+
+                            // スコアに基づくLvとSPの計算
+                            final val = radarData[cat] ?? 0.0;
+                            final baseScore =
+                                val > 0 ? val : (index + 1) * 3.0;
+                            int sp = ((baseScore / 20.0) * 500).toInt();
+                            if (sp < 50) sp = (index + 1) * 60;
+                            if (sp > 500) sp = 500;
+                            int level = (sp / 100).floor() + 1;
+
+                            double progress = sp / 500.0;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 18.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      // 左上: 要素名とレベル表示
+                                      Row(
+                                        children: [
+                                          Text(
+                                            cat,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 15,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Container(
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 2,
+                                                ),
+                                            decoration: BoxDecoration(
+                                              color: color.withValues(
+                                                alpha: 0.15,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              border: Border.all(
+                                                color: color.withValues(
+                                                  alpha: 0.4,
+                                                ),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              'Lv.$level',
+                                              style: TextStyle(
+                                                color: color,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      // 右上: SP表示
+                                      Text(
+                                        '$sp/500 SP',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade700,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // プログレスバー
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: LinearProgressIndicator(
+                                      value: progress,
+                                      minHeight: 12,
+                                      backgroundColor: Colors.grey.shade200,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        color,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 40),
                 // デバッグ用: 日付選択ボタン
                 Container(
@@ -1837,7 +1695,7 @@ class _ResultScreenState extends State<ResultScreen> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              Text('今週の成長記録', style: Theme.of(context).textTheme.headlineSmall),
+              Text('成長記録', style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 20),
               Expanded(
                 child: LayoutBuilder(
@@ -2269,13 +2127,25 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
       itemBuilder: (context, index) {
         final dailyRecord = widget.record.dailyRecords[index];
         // 累計スコアと最大値を計算
-        final maxScore = (index + 1) * 4.0;
+        final baseMaxScore = (index + 1) * 4.0;
+        final maxScore = baseMaxScore + 3.5;
         final isAnswersEmpty = dailyRecord.answers.isEmpty;
 
         final cumulativeEntries =
             isAnswersEmpty
                 ? categories.map((_) => const RadarEntry(value: -1.0)).toList()
                 : _getCumulativeEntries(index, categories);
+
+        final spBoostEntries = cumulativeEntries.asMap().entries.map((entry) {
+          int idx = entry.key;
+          double val = entry.value.value;
+          if (val < 0) return const RadarEntry(value: -1.0);
+          int sp = ((val / 20.0) * 500).toInt();
+          if (sp < 50) sp = (idx + 1) * 60;
+          if (sp > 500) sp = 500;
+          double spBoost = (sp / 500.0) * 3.5;
+          return RadarEntry(value: val + spBoost);
+        }).toList();
 
         return Card(
           margin: const EdgeInsets.only(bottom: 20),
@@ -2297,15 +2167,67 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
                     fontSize: 16,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
+                // 凡例
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Colors.blue,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      '自己評価',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Colors.orangeAccent,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Text(
+                      'SP上乗せブースト',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
                 SizedBox(
                   height: 250,
                   child: RadarChart(
                     RadarChartData(
                       dataSets: [
+                        // SP上乗せブースト（積層エリア）
                         RadarDataSet(
-                          fillColor: Colors.blue.withValues(alpha: 0.2),
-                          borderColor: Colors.blue,
+                          fillColor: Colors.orangeAccent.withValues(
+                            alpha: 0.35,
+                          ),
+                          borderColor: Colors.orange,
+                          borderWidth: 2.0,
+                          entryRadius: 3,
+                          dataEntries: spBoostEntries,
+                        ),
+                        // 自己評価（ベースエリア）
+                        RadarDataSet(
+                          fillColor: Colors.blue.withValues(alpha: 0.5),
+                          borderColor: Colors.blue.shade700,
+                          borderWidth: 2.0,
                           entryRadius: 3,
                           dataEntries: cumulativeEntries,
                         ),
@@ -2836,6 +2758,237 @@ class _QuestionEditScreenState extends State<QuestionEditScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+// ==========================================
+// 管理者画面
+// ==========================================
+class AdminScreen extends StatefulWidget {
+  const AdminScreen({super.key});
+
+  @override
+  State<AdminScreen> createState() => _AdminScreenState();
+}
+
+class _AdminScreenState extends State<AdminScreen> {
+  String? _selectedQuestionSetId;
+
+  // 各作業内容ごとの受診ユーザー（ダミーデータ）
+  final Map<String, List<Map<String, String>>> _userRecordsMap = {
+    'イラスト制作': [
+      {'name': '山田 太郎', 'date': '2026/06/28', 'avatar': '山'},
+      {'name': '佐藤 花子', 'date': '2026/06/27', 'avatar': '佐'},
+      {'name': '鈴木 健太', 'date': '2026/06/25', 'avatar': '鈴'},
+    ],
+    '3Dモデリング': [
+      {'name': '高橋 匠', 'date': '2026/06/28', 'avatar': '高'},
+      {'name': '田中 葵', 'date': '2026/06/26', 'avatar': '田'},
+    ],
+    'DTM': [
+      {'name': '伊藤 響', 'date': '2026/06/28', 'avatar': '伊'},
+      {'name': '渡辺 奏', 'date': '2026/06/24', 'avatar': '渡'},
+      {'name': '小林 凛', 'date': '2026/06/20', 'avatar': '小'},
+    ],
+    '動画編集': [
+      {'name': '中村 創', 'date': '2026/06/28', 'avatar': '中'},
+      {'name': '木村 翼', 'date': '2026/06/27', 'avatar': '木'},
+    ],
+    'データ入力': [
+      {'name': '加藤 誠', 'date': '2026/06/28', 'avatar': '加'},
+      {'name': '吉田 恵', 'date': '2026/06/27', 'avatar': '吉'},
+      {'name': '松本 蓮', 'date': '2026/06/23', 'avatar': '松'},
+      {'name': '井上 陸', 'date': '2026/06/21', 'avatar': '井'},
+    ],
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final appState = Provider.of<AppState>(context);
+    final questionSets = appState.questionSets;
+
+    // 初期選択
+    if (_selectedQuestionSetId == null && questionSets.isNotEmpty) {
+      _selectedQuestionSetId = questionSets.first.id;
+    }
+
+    final currentSet = questionSets.firstWhere(
+      (qs) => qs.id == _selectedQuestionSetId,
+      orElse: () => questionSets.isNotEmpty ? questionSets.first : QuestionSet(id: '', title: '', questions: [], categories: []),
+    );
+
+    final users = _userRecordsMap[currentSet.title] ?? [
+      {'name': '登録ユーザーA', 'date': '2026/06/28', 'avatar': 'A'},
+      {'name': '登録ユーザーB', 'date': '2026/06/27', 'avatar': 'B'},
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('管理画面'),
+        backgroundColor: const Color(0xFFFFFFFF),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => Navigator.pushNamed(context, '/question_edit'),
+            tooltip: '質問編集',
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+            tooltip: 'ログアウト',
+          ),
+        ],
+      ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFFFFF), Color(0xFFDFBFFF)],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // プルダウンメニューエリア
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Text(
+                      '作業内容：',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: currentSet.id.isNotEmpty ? currentSet.id : null,
+                          isExpanded: true,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          items: questionSets.map((qs) {
+                            return DropdownMenuItem(
+                              value: qs.id,
+                              child: Text(qs.title),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            if (value != null) {
+                              setState(() {
+                                _selectedQuestionSetId = value;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                '「${currentSet.title}」の診断実施ユーザー',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 12),
+              // ユーザータイルのリスト/グリッド表示
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1.3,
+                  ),
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    final user = users[index];
+                    return Card(
+                      elevation: 3,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          // タップすると過去の記録へ遷移
+                          Navigator.pushNamed(context, '/history');
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircleAvatar(
+                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                foregroundColor: Colors.white,
+                                radius: 20,
+                                child: Text(
+                                  user['avatar'] ?? 'U',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                user['name'] ?? '',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                user['date'] ?? '',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
