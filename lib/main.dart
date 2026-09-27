@@ -23,6 +23,7 @@ void main() {
   );
 }
 
+// 色々見てやってね
 // アプリの土台となるウィジェット（構成要素）です。
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
