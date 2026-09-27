@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import 'admin_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
@@ -38,11 +39,31 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6750A4),
+          seedColor: const Color(0xFF6A1B9A),
           brightness: Brightness.light,
         ),
         useMaterial3: true,
-        // アプリ全体のフォントに「Noto Sans JP」を使用。
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
+          foregroundColor: Color(0xFF1A1A1A),
+          elevation: 0,
+          toolbarHeight: 56.0,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            color: Color(0xFF1A1A1A),
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            elevation: 2,
+          ),
+        ),
         textTheme: GoogleFonts.notoSansJpTextTheme(),
       ),
       // 起動時に表示される最初の画面を設定します。
@@ -54,7 +75,8 @@ class MyApp extends StatelessWidget {
               originalHome: HomeScreen(),
             ),
         '/': (context) => const HomeScreen(),
-        '/admin': (context) => const AdminScreen(),
+        '/admin': (context) => const AdminHomeScreen(),
+        '/draft_admin': (context) => const AdminScreen(),
         '/question': (context) => const QuestionScreen(),
         '/result': (context) => const ResultScreen(),
         '/history': (context) => const HistoryScreen(),
@@ -870,6 +892,77 @@ class AppState extends ChangeNotifier {
 }
 
 // ==========================================
+// 画面共通ヘッダー（設定・使い方）
+// ==========================================
+Widget buildSkillFinderUserHeader(BuildContext context) {
+  return Padding(
+    padding: const EdgeInsets.only(top: 12.0, left: 16.0, right: 16.0, bottom: 12.0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        OutlinedButton.icon(
+          onPressed: () {},
+          style: OutlinedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: const Color(0xFF28004F),
+            side: BorderSide(color: const Color(0xFF28004F).withValues(alpha: 0.5)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          ),
+          icon: const Icon(Icons.settings, size: 18),
+          label: const Text('設定'),
+        ),
+        PopupMenuButton<String>(
+          color: Colors.white,
+          surfaceTintColor: Colors.white,
+          onSelected: (String value) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: const Color(0xFF28004F),
+                content: Text('$value が選択されました', style: const TextStyle(color: Colors.white)),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            const PopupMenuItem<String>(
+              value: '使い方１',
+              child: Text('使い方１', style: TextStyle(color: Color(0xFF28004F))),
+            ),
+            const PopupMenuItem<String>(
+              value: '使い方２',
+              child: Text('使い方２', style: TextStyle(color: Color(0xFF28004F))),
+            ),
+            const PopupMenuItem<String>(
+              value: '使い方３',
+              child: Text('使い方３', style: TextStyle(color: Color(0xFF28004F))),
+            ),
+          ],
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16.0),
+              border: Border.all(color: const Color(0xFF28004F).withValues(alpha: 0.5)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.help_outline, size: 18, color: Color(0xFF28004F)),
+                SizedBox(width: 6),
+                Text('使い方', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF28004F))),
+                SizedBox(width: 4),
+                Icon(Icons.arrow_drop_down, size: 18, color: Color(0xFF28004F)),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// ==========================================
 // 4. UI Screens / 画面の構成
 // ==========================================
 
@@ -890,10 +983,38 @@ class _HomeScreenState extends State<HomeScreen> {
     final appState = Provider.of<AppState>(context);
     final radarData = appState.getLatestRadarData();
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LoginScreen(
+                appName: '適性診断',
+                originalHome: HomeScreen(),
+              ),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
-        title: const Text('適性診断'),
-        backgroundColor: const Color(0xFFFFFFFF),
+        automaticallyImplyLeading: false,
+        title: const Text(
+          '適性診断',
+          style: TextStyle(
+            color: Color(0xFF1A1A1A),
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        toolbarHeight: 56.0,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        foregroundColor: const Color(0xFF1A1A1A),
+        elevation: 0,
+        centerTitle: true,
       ),
       // グラデーション背景
       body: Container(
@@ -907,28 +1028,35 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.history),
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+          child: Column(
+            children: [
+              buildSkillFinderUserHeader(context),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Center(
+                    child: ElevatedButton.icon(
                       onPressed: () => Navigator.pushNamed(context, '/history'),
-                      tooltip: '過去の記録',
+                      icon: const Icon(Icons.history, size: 20),
+                      label: const Text(
+                        '過去の記録',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: const Color(0xFF28004F),
+                        side: BorderSide(color: const Color(0xFF28004F).withOpacity(0.5)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                        elevation: 2,
+                      ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.logout),
-                      onPressed:
-                          () => Navigator.pushReplacementNamed(
-                            context,
-                            '/login',
-                          ),
-                      tooltip: 'ログアウト',
-                    ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 4),
                 // 見出しを表示します。
@@ -1477,8 +1605,34 @@ class _QuestionScreenState extends State<QuestionScreen> {
   Widget build(BuildContext context) {
     if (_questions.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('質問')),
-        body: const Center(child: Text('今日の質問はありません')),
+        appBar: AppBar(
+          title: const Text(
+            '質問',
+            style: TextStyle(
+              color: Color(0xFF1A1A1A),
+              fontSize: 20.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          toolbarHeight: 56.0,
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.white,
+          foregroundColor: const Color(0xFF1A1A1A),
+          elevation: 0,
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              buildSkillFinderUserHeader(context),
+              const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: Text('今日の質問はありません')),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -1486,8 +1640,20 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('質問 ${_currentQuestionIndex + 1}/${_questions.length}'),
-        backgroundColor: const Color(0xFFFFFFFF),
+        title: Text(
+          '質問 ${_currentQuestionIndex + 1}/${_questions.length}',
+          style: const TextStyle(
+            color: Color(0xFF1A1A1A),
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        toolbarHeight: 56.0,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        foregroundColor: const Color(0xFF1A1A1A),
+        elevation: 0,
+        centerTitle: true,
       ),
       body: Container(
         width: double.infinity,
@@ -1500,61 +1666,68 @@ class _QuestionScreenState extends State<QuestionScreen> {
           ),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 進捗バー
-              LinearProgressIndicator(
-                value: (_currentQuestionIndex + 1) / _questions.length,
-                minHeight: 10,
-                borderRadius: BorderRadius.circular(5),
-              ),
-              const SizedBox(height: 30),
-              Text(
-                question.category,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                question.text,
-                style: Theme.of(context).textTheme.headlineSmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 30),
-              const Text(
-                '今日のメモ',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _memoController,
-                maxLines: 1,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: '気付いたことや感想を入力してください',
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300, width: 1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
+              buildSkillFinderUserHeader(context),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: _buildRatingButtons(),
+                  children: [
+                    // 進捗バー
+                    LinearProgressIndicator(
+                      value: (_currentQuestionIndex + 1) / _questions.length,
+                      minHeight: 10,
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    const SizedBox(height: 30),
+                    Text(
+                      question.category,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      question.text,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 30),
+                    const Text(
+                      '今日のメモ',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _memoController,
+                      maxLines: 1,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: '気付いたことや感想を入力してください',
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey.shade300, width: 1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: _buildRatingButtons(),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+                  ],
                 ),
               ),
-              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -1677,8 +1850,20 @@ class _ResultScreenState extends State<ResultScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('診断結果'),
-        backgroundColor: const Color(0xFFFFFFFF),
+        title: const Text(
+          '診断結果',
+          style: TextStyle(
+            color: Color(0xFF1A1A1A),
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        toolbarHeight: 56.0,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        foregroundColor: const Color(0xFF1A1A1A),
+        elevation: 0,
+        centerTitle: true,
         automaticallyImplyLeading: false,
       ),
       body: Container(
@@ -1691,154 +1876,164 @@ class _ResultScreenState extends State<ResultScreen> {
             colors: [Color(0xFFFFFFFF), Color(0xFFDFBFFF)],
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             children: [
-              Text('成長記録', style: Theme.of(context).textTheme.headlineSmall),
-              const SizedBox(height: 20),
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    // 現在の最大スコアを計算 (Day数 * 4点)
-                    int todayIndex = appState.getTodayIndex();
-                    if (todayIndex < 0) todayIndex = 0;
-                    if (todayIndex > 4) todayIndex = 4;
+              buildSkillFinderUserHeader(context),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  children: [
+                    Text('成長記録', style: Theme.of(context).textTheme.headlineSmall),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 300,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          // 現在の最大スコアを計算 (Day数 * 4点)
+                          int todayIndex = appState.getTodayIndex();
+                          if (todayIndex < 0) todayIndex = 0;
+                          if (todayIndex > 4) todayIndex = 4;
 
-                    final double maxScore = (todayIndex + 1) * 4.0;
+                          final double maxScore = (todayIndex + 1) * 4.0;
 
-                    // レーダーチャートのロジック
-                    return RadarChart(
-                      RadarChartData(
-                        dataSets: [
-                          RadarDataSet(
-                            fillColor: Colors.blue.withValues(alpha: 0.2),
-                            borderColor: Colors.blue,
-                            entryRadius: 3,
-                            dataEntries:
-                                (appState.currentQuestionSet?.categories ?? [])
-                                    .map((cat) {
-                                      return RadarEntry(
-                                        value: currentAverages[cat] ?? 0.0,
-                                      );
-                                    })
-                                    .toList(),
-                          ),
-                          if (_showComparison && previousAverages.isNotEmpty)
-                            RadarDataSet(
-                              fillColor: Colors.grey.withValues(alpha: 0.2),
-                              borderColor: Colors.grey,
-                              entryRadius: 2,
-                              dataEntries:
-                                  (appState.currentQuestionSet?.categories ??
-                                          [])
-                                      .map((cat) {
-                                        return RadarEntry(
-                                          value: previousAverages[cat] ?? 0.0,
-                                        );
-                                      })
-                                      .toList(),
+                          // レーダーチャートのロジック
+                          return RadarChart(
+                            RadarChartData(
+                              dataSets: [
+                                RadarDataSet(
+                                  fillColor: Colors.blue.withValues(alpha: 0.2),
+                                  borderColor: Colors.blue,
+                                  entryRadius: 3,
+                                  dataEntries:
+                                      (appState.currentQuestionSet?.categories ?? [])
+                                          .map((cat) {
+                                            return RadarEntry(
+                                              value: currentAverages[cat] ?? 0.0,
+                                            );
+                                          })
+                                          .toList(),
+                                ),
+                                if (_showComparison && previousAverages.isNotEmpty)
+                                  RadarDataSet(
+                                    fillColor: Colors.grey.withValues(alpha: 0.2),
+                                    borderColor: Colors.grey,
+                                    entryRadius: 2,
+                                    dataEntries:
+                                        (appState.currentQuestionSet?.categories ??
+                                                [])
+                                            .map((cat) {
+                                              return RadarEntry(
+                                                value: previousAverages[cat] ?? 0.0,
+                                              );
+                                            })
+                                            .toList(),
+                                  ),
+                                // 透明なデータセットを追加してスケールを固定
+                                RadarDataSet(
+                                  fillColor: Colors.transparent,
+                                  borderColor: Colors.transparent,
+                                  entryRadius: 0,
+                                  dataEntries:
+                                      (appState.currentQuestionSet?.categories ?? [])
+                                          .map((cat) {
+                                            return RadarEntry(value: maxScore);
+                                          })
+                                          .toList(),
+                                ),
+                                // 最小値を-1に固定するための透明なデータセット
+                                RadarDataSet(
+                                  fillColor: Colors.transparent,
+                                  borderColor: Colors.transparent,
+                                  entryRadius: 0,
+                                  dataEntries:
+                                      (appState.currentQuestionSet?.categories ?? [])
+                                          .map((cat) {
+                                            return const RadarEntry(value: -1.0);
+                                          })
+                                          .toList(),
+                                ),
+                              ],
+                              isMinValueAtCenter: true,
+                              radarBackgroundColor: Colors.transparent,
+                              borderData: FlBorderData(show: false),
+                              radarBorderData: const BorderSide(color: Colors.grey),
+                              titlePositionPercentageOffset: 0.2,
+                              titleTextStyle: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 12,
+                              ),
+                              getTitle: (index, angle) {
+                                final cats =
+                                    appState.currentQuestionSet?.categories ?? [];
+                                return RadarChartTitle(
+                                  text: index < cats.length ? cats[index] : '',
+                                  angle: 0,
+                                );
+                              },
+                              tickCount: 5, // 5分割で6つの同心円
+                              ticksTextStyle: const TextStyle(
+                                color: Colors.transparent,
+                              ),
+                              tickBorderData: const BorderSide(color: Colors.grey),
+                              gridBorderData: const BorderSide(
+                                color: Colors.grey,
+                                width: 0.5,
+                              ),
                             ),
-                          // 透明なデータセットを追加してスケールを固定
-                          RadarDataSet(
-                            fillColor: Colors.transparent,
-                            borderColor: Colors.transparent,
-                            entryRadius: 0,
-                            dataEntries:
-                                (appState.currentQuestionSet?.categories ?? [])
-                                    .map((cat) {
-                                      return RadarEntry(value: maxScore);
-                                    })
-                                    .toList(),
-                          ),
-                          // 最小値を-1に固定するための透明なデータセット
-                          RadarDataSet(
-                            fillColor: Colors.transparent,
-                            borderColor: Colors.transparent,
-                            entryRadius: 0,
-                            dataEntries:
-                                (appState.currentQuestionSet?.categories ?? [])
-                                    .map((cat) {
-                                      return const RadarEntry(value: -1.0);
-                                    })
-                                    .toList(),
-                          ),
-                        ],
-                        isMinValueAtCenter: true,
-                        radarBackgroundColor: Colors.transparent,
-                        borderData: FlBorderData(show: false),
-                        radarBorderData: const BorderSide(color: Colors.grey),
-                        titlePositionPercentageOffset: 0.2,
-                        titleTextStyle: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 12,
-                        ),
-                        getTitle: (index, angle) {
-                          final cats =
-                              appState.currentQuestionSet?.categories ?? [];
-                          return RadarChartTitle(
-                            text: index < cats.length ? cats[index] : '',
-                            angle: 0,
                           );
                         },
-                        tickCount: 5, // 5分割で6つの同心円
-                        ticksTextStyle: const TextStyle(
-                          color: Colors.transparent,
-                        ),
-                        tickBorderData: const BorderSide(color: Colors.grey),
-                        gridBorderData: const BorderSide(
-                          color: Colors.grey,
-                          width: 0.5,
-                        ),
                       ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
-              // 「先週と比較する」スイッチ
-              SwitchListTile(
-                title: const Text('先週と比較する'),
-                subtitle: const Text('同じ職種の過去の記録を重ねて表示します'),
-                value: _showComparison,
-                onChanged: (value) {
-                  setState(() {
-                    _showComparison = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (appState.isAllDaysRecorded()) {
-                      _showNewRecordDialog(context, appState);
-                    } else {
-                      appState.saveCurrentWeekToHistory();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('履歴に保存しました')),
-                      );
-                      Navigator.pushReplacementNamed(context, '/history');
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: const Text('履歴に保存する'),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.popUntil(context, ModalRoute.withName('/'));
-                  },
-                  child: const Text('ホームに戻る'),
+                    ),
+                    const SizedBox(height: 20),
+                    // 「先週と比較する」スイッチ
+                    SwitchListTile(
+                      title: const Text('先週と比較する'),
+                      subtitle: const Text('同じ職種の過去の記録を重ねて表示します'),
+                      value: _showComparison,
+                      onChanged: (value) {
+                        setState(() {
+                          _showComparison = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (appState.isAllDaysRecorded()) {
+                            _showNewRecordDialog(context, appState);
+                          } else {
+                            appState.saveCurrentWeekToHistory();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('履歴に保存しました')),
+                            );
+                            Navigator.pushReplacementNamed(context, '/history');
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('履歴に保存する'),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.popUntil(context, ModalRoute.withName('/'));
+                        },
+                        child: const Text('ホームに戻る'),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                 ),
               ),
             ],
@@ -1861,8 +2056,20 @@ class HistoryScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('過去の記録'),
-        backgroundColor: const Color(0xFFFFFFFF),
+        title: const Text(
+          '過去の記録',
+          style: TextStyle(
+            color: Color(0xFF1A1A1A),
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        toolbarHeight: 56.0,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        foregroundColor: const Color(0xFF1A1A1A),
+        elevation: 0,
+        centerTitle: true,
       ),
       body: Container(
         width: double.infinity,
@@ -1874,12 +2081,15 @@ class HistoryScreen extends StatelessWidget {
             colors: [Color(0xFFFFFFFF), Color(0xFFDFBFFF)],
           ),
         ),
-        // 保存されている履歴の数だけ、リストの項目（カード）を作ります。
         child: ListView.builder(
-          padding: const EdgeInsets.all(16.0),
-          itemCount: history.length,
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          itemCount: history.length + 1,
           itemBuilder: (context, index) {
-            final record = history[index];
+            if (index == 0) {
+              return buildSkillFinderUserHeader(context);
+            }
+            final record = history[index - 1];
             return _buildHistoryTile(context, record);
           },
         ),
@@ -2065,8 +2275,18 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
             }
             return '$startStr〜 の詳細';
           }(),
+          style: const TextStyle(
+            color: Color(0xFF1A1A1A),
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: const Color(0xFFFFFFFF),
+        toolbarHeight: 56.0,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        foregroundColor: const Color(0xFF1A1A1A),
+        elevation: 0,
+        centerTitle: true,
       ),
       body: Container(
         width: double.infinity,
@@ -2078,43 +2298,44 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
             colors: [Color(0xFFFFFFFF), Color(0xFFDFBFFF)],
           ),
         ),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            // 重ねて表示ボタン
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isOverlayMode = !_isOverlayMode;
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  _isOverlayMode ? '個別表示に戻す' : '重ねて表示する',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              buildSkillFinderUserHeader(context),
+              const SizedBox(height: 8),
+              // 重ねて表示ボタン
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isOverlayMode = !_isOverlayMode;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _isOverlayMode ? '個別表示に戻す' : '重ねて表示する',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child:
-                  _isOverlayMode
-                      ? _buildOverlayChart(categories)
-                      : _buildVerticalList(categories),
-            ),
-          ],
+              const SizedBox(height: 20),
+              _isOverlayMode
+                  ? _buildOverlayChart(categories)
+                  : _buildVerticalList(categories),
+            ],
+          ),
         ),
       ),
     );
@@ -2122,6 +2343,8 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
 
   Widget _buildVerticalList(List<String> categories) {
     return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.all(16),
       itemCount: widget.record.dailyRecords.length,
       itemBuilder: (context, index) {
@@ -2309,6 +2532,7 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Container(
+        height: 350,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -2440,7 +2664,8 @@ class _HistoryDetailScreenState extends State<HistoryDetailScreen> {
 // 6. 質問編集画面
 // 診断に使用する職種テンプレートの「質問文」や「カテゴリー名」を変更できる画面です。
 class QuestionEditScreen extends StatefulWidget {
-  const QuestionEditScreen({super.key});
+  final bool isEmbedded;
+  const QuestionEditScreen({super.key, this.isEmbedded = false});
 
   @override
   State<QuestionEditScreen> createState() => _QuestionEditScreenState();
@@ -2458,196 +2683,212 @@ class _QuestionEditScreenState extends State<QuestionEditScreen> {
       (qs) => qs.id == (_selectedSetId ?? questionSets.first.id),
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('質問編集'),
-        backgroundColor: const Color(0xFFFFFFFF),
-      ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFFFFF), Color(0xFFDFBFFF)],
-          ),
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              // どの職種（シチュエーション）を編集するか選ぶボックスです。
-              child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'シチュエーション選択',
-                  border: OutlineInputBorder(),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedSetId ?? questionSets.first.id,
-                    isDense: true,
-                    items:
-                        questionSets.map((qs) {
-                          return DropdownMenuItem(
-                            value: qs.id,
-                            child: Text(qs.title),
-                          );
-                        }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        // 編集対象の職種を切り替えます。
-                        _selectedSetId = value;
-                      });
-                    },
-                  ),
+    final mainContent = Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: widget.isEmbedded
+          ? null
+          : const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFFFFFFFF), Color(0xFFDFBFFF)],
+              ),
+            ),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          if (!widget.isEmbedded) buildSkillFinderUserHeader(context),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            // どの職種（シチュエーション）を編集するか選ぶボックスです。
+            child: InputDecorator(
+              decoration: const InputDecoration(
+                labelText: 'シチュエーション選択',
+                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedSetId ?? questionSets.first.id,
+                  isDense: true,
+                  items:
+                      questionSets.map((qs) {
+                        return DropdownMenuItem(
+                          value: qs.id,
+                          child: Text(qs.title),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      // 編集対象の職種を切り替えます。
+                      _selectedSetId = value;
+                    });
+                  },
                 ),
               ),
             ),
-            Expanded(
-              child: ListView(
-                children: [
-                  // カテゴリー編集セクション
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '評価カテゴリー（6項目）',
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed:
-                                  () => _showCategoryEditDialog(
+          ),
+          // カテゴリー編集セクション
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '評価カテゴリー（6項目）',
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed:
+                          () => _showCategoryEditDialog(
+                            context,
+                            selectedSet,
+                          ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children:
+                      selectedSet.categories.map((cat) {
+                        return Chip(
+                          label: Text(cat),
+                          backgroundColor: Colors.blue.withValues(
+                            alpha: 0.1,
+                          ),
+                        );
+                      }).toList(),
+                ),
+              ],
+            ),
+          ),
+          const Divider(thickness: 2),
+          // 質問編集セクション
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '質問項目（5日間 x 6カテゴリー = 30問）',
+                style: Theme.of(context).textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 5, // 5 Days
+            itemBuilder: (context, dayIndex) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ExpansionTile(
+                    title: Text('Day ${dayIndex + 1}'),
+                    childrenPadding: const EdgeInsets.all(8.0),
+                    children:
+                        selectedSet.categories.map((category) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(
+                                  color: Colors.grey.shade300,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: ListTile(
+                                title: Text(category),
+                                subtitle: Text(
+                                  selectedSet.questions
+                                      .firstWhere(
+                                        (q) =>
+                                            q.dayIndex == dayIndex &&
+                                            q.category == category,
+                                        orElse:
+                                            () => Question(
+                                              id: '',
+                                              text: '質問内容を設定...',
+                                              category: '',
+                                              dayIndex: 0,
+                                            ),
+                                      )
+                                      .text,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                                trailing: const Icon(Icons.edit),
+                                onTap: () {
+                                  _showEditDialog(
                                     context,
                                     selectedSet,
-                                  ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children:
-                              selectedSet.categories.map((cat) {
-                                return Chip(
-                                  label: Text(cat),
-                                  backgroundColor: Colors.blue.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                );
-                              }).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Divider(thickness: 2),
-                  // 質問編集セクション
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: Colors.grey.shade300),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '質問項目（5日間 x 6カテゴリー = 30問）',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: 5, // 5 Days
-                    itemBuilder: (context, dayIndex) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 8.0,
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: ExpansionTile(
-                            title: Text('Day ${dayIndex + 1}'),
-                            childrenPadding: const EdgeInsets.all(8.0),
-                            children:
-                                selectedSet.categories.map((category) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        border: Border.all(
-                                          color: Colors.grey.shade300,
-                                        ),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: ListTile(
-                                        title: Text(category),
-                                        subtitle: Text(
-                                          selectedSet.questions
-                                              .firstWhere(
-                                                (q) =>
-                                                    q.dayIndex == dayIndex &&
-                                                    q.category == category,
-                                                orElse:
-                                                    () => Question(
-                                                      id: '',
-                                                      text: '質問内容を設定...',
-                                                      category: '',
-                                                      dayIndex: 0,
-                                                    ),
-                                              )
-                                              .text,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: Colors.grey.shade600,
-                                          ),
-                                        ),
-                                        trailing: const Icon(Icons.edit),
-                                        onTap: () {
-                                          _showEditDialog(
-                                            context,
-                                            selectedSet,
-                                            category,
-                                            dayIndex,
-                                          );
-                                        },
-                                      ),
-                                    ),
+                                    category,
+                                    dayIndex,
                                   );
-                                }).toList(),
-                          ),
-                        ),
-                      );
-                    },
+                                },
+                              ),
+                            ),
+                          );
+                        }).toList(),
                   ),
-                ],
-              ),
-            ),
-          ],
-        ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
+    );
+
+    if (widget.isEmbedded) {
+      return mainContent;
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          '質問編集',
+          style: TextStyle(
+            color: Color(0xFF1A1A1A),
+            fontSize: 20.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        toolbarHeight: 56.0,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        foregroundColor: const Color(0xFF1A1A1A),
+        elevation: 0,
+        centerTitle: true,
+      ),
+      body: mainContent,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // 新規作成ロジック（未実装）
